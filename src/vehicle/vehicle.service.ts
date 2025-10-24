@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Vehicle } from './vehicle.entity';
+import { Vehicle } from '../entities/vehicle.entity';
 import { Like, Repository } from 'typeorm';
+import { PaginatedVehicle } from './dto/paginated-result.dto';
 
 @Injectable()
 export class VehicleService {
@@ -10,7 +11,7 @@ export class VehicleService {
     private vehicleRepository: Repository<Vehicle>,
   ) {}
 
-  async findAll(page: number = 1, limit: number = 100) {
+  async findAll(page: number = 1, limit: number = 100): Promise<PaginatedVehicle> {
     const skip = (page - 1) * limit;
     const [data, total] = await this.vehicleRepository.findAndCount({
       order: { manufactured_date: 'ASC' },
