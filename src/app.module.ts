@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { QueueModule } from './queue/queue.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -34,7 +32,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       playground: true,
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
