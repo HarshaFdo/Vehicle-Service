@@ -33,8 +33,8 @@ export class Vehicle {
     @Column({unique: true})
     vin: string;
 
-    @Field()
-    @Column({type: 'int'})
+    @Field(() => String)
+    @Column({ type: 'date', nullable: false })
     manufactured_date: Date;
 
     @Field(()=>Int)
