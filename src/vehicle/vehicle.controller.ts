@@ -4,7 +4,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
+  Param,
   Post,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,6 +17,8 @@ import { extname, join } from 'path';
 import { firstValueFrom } from 'rxjs';
 import { ExportVehicleDto } from './dto/export-vehicle.dto';
 import { ProcessorService } from 'src/processor/processor.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Controller('vehicle')
 export class VehicleController {
@@ -49,10 +54,10 @@ export class VehicleController {
     }
 
     // Call background process
-    await this.processorService.importJob({
-      filePath: file.path,
-      fileType: type,
-    });
+    await this.processorService.importJob( {
+        filePath: file.path,
+        fileType: type,
+      });
 
     return { message: 'File uploaded successfully. Processing in background.' };
   }
@@ -61,13 +66,26 @@ export class VehicleController {
   async exportVehicles(@Body() data: ExportVehicleDto) {
     // Call background-service API
     await this.processorService.exportJob({
-      minAge: data.minAge,
-      userId: data.userId,
-    });
+        minAge: data.minAge,
+        userId: data.userId,
+        sessionHash: data.sessionHash,
+      })
 
     return {
       message:
         'Export job queued. You will receive notification when complete.',
     };
   }
+
+  @Get('download/:fileName')
+  async downloadFile(@Param('fileName') fileName: string, @Res() res) {
+  const filePath = path.join(__dirname, '..', '..', '..', 'shared', 'exports', fileName);
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    throw new BadRequestException('File not found');
+  }
+
+   res.download(filePath, fileName);
+}
 }

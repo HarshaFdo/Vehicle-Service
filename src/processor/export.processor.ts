@@ -21,7 +21,9 @@ export class ExportProcessor extends WorkerHost {
   }
 
   async process(job: Job): Promise<any> {
-    const { minAge, userId } = job.data;
+    const { minAge, userId, sessionHash } = job.data;
+
+    console.log('Job data received:', { minAge, userId, sessionHash });
 
     const vehicles = await this.vehicleRepository
       .createQueryBuilder('vehicle')
@@ -29,10 +31,18 @@ export class ExportProcessor extends WorkerHost {
       .orderBy('vehicle.manufactured_date', 'ASC')
       .getMany();
 
-      console.log('Found vehicles:', vehicles.length);
+    console.log('Found vehicles:', vehicles.length);
 
     const fileName = `export-${Date.now()}.csv`;
-    const filePath = path.join(__dirname, '..', '..', '..', 'shared', 'exports', fileName);
+    const filePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'shared',
+      'exports',
+      fileName,
+    );
     const writeStream = createWriteStream(filePath);
 
     // Write CSV header
@@ -49,18 +59,25 @@ export class ExportProcessor extends WorkerHost {
 
     writeStream.end();
 
-    // Send notification
+    // Send notification to the notification service
+try {
+    const payload = {
+      userId,
+      sessionHash,
+      message: `Export completed: ${vehicles.length} vehicles exported`,
+      fileName,
+      filePath,
+    };
+    console.log('Sending to notification service:', payload); // Add this line
+    
     await firstValueFrom(
-      this.httpService.post('http://localhost:3002/notification/send', {
-        userId,
-        message: `Export completed: ${vehicles.length} vehicles exported`,
-        fileName: fileName,
-        filePath: filePath,
-      }),
+      this.httpService.post('http://localhost:3002/notification/send', payload),
     );
 
-    console.log('Notification sent');
-    
+    console.log('Notification sent to notification service');
+  } catch (error) {
+    console.error('Error sending notification:', error);
+  }
     return { success: true, count: vehicles.length, fileName };
   }
 }
