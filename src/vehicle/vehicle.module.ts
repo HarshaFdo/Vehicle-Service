@@ -4,12 +4,12 @@ import { VehicleResolver } from './vehicle.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Vehicle } from '../entities/vehicle.entity';
 import { VehicleController } from './vehicle.controller';
-import { HttpModule } from '@nestjs/axios';
+import { ProcessorModule } from 'src/processor/processor.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Vehicle]),
-    HttpModule,
+    ProcessorModule,
   ],
   controllers: [VehicleController],
   providers: [VehicleService, VehicleResolver],

@@ -9,15 +9,15 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Queue } from 'bullmq';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { firstValueFrom } from 'rxjs';
 import { ExportVehicleDto } from './dto/export-vehicle.dto';
+import { ProcessorService } from 'src/processor/processor.service';
 
 @Controller('vehicle')
 export class VehicleController {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly processorService: ProcessorService) {}
 
   @Post('import')
   @UseInterceptors(
@@ -48,13 +48,11 @@ export class VehicleController {
       throw new BadRequestException('Only CSV and Excel files are allowed');
     }
 
-    // Call background-service API
-    await firstValueFrom(
-      this.httpService.post('http://localhost:3001/job/import', {
-        filePath: file.path,
-        fileType: type,
-      }),
-    );
+    // Call background process
+    await this.processorService.importJob({
+      filePath: file.path,
+      fileType: type,
+    });
 
     return { message: 'File uploaded successfully. Processing in background.' };
   }
@@ -62,12 +60,10 @@ export class VehicleController {
   @Post('export')
   async exportVehicles(@Body() data: ExportVehicleDto) {
     // Call background-service API
-    await firstValueFrom(
-      this.httpService.post('http://localhost:3001/job/export', {
-        minAge: data.minAge,
-        userId: data.userId,
-      }),
-    );
+    await this.processorService.exportJob({
+      minAge: data.minAge,
+      userId: data.userId,
+    });
 
     return {
       message:
