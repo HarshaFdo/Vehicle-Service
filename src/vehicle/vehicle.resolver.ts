@@ -36,6 +36,13 @@ export class VehicleResolver {
     return this.vehicleService.findOne(vin);
   }
 
+  @Query(() => [Vehicle])
+  async searchByAge(
+    @Args('minAge', { type: () => Int }) minAge: number,
+  ): Promise<Vehicle[]> {
+    return this.vehicleService.findByAge(minAge);
+  }
+
   @Mutation(() => Vehicle)
   updateVehicle(
     @Args('vin', { type: () => String }) vin: string,
