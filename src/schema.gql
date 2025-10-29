@@ -32,10 +32,6 @@ type Query {
   ): PaginatedVehicle!
 }
 
-type ServiceRecord {
-  id: ID!
-}
-
 input UpdateVehicleInput {
   car_make: String
   car_model: String
@@ -55,7 +51,6 @@ type Vehicle {
   id: ID!
   last_name: String!
   manufactured_date: String!
-  serviceRecords: [ServiceRecord!]
-  updateed_at: DateTime!
+  updated_at: DateTime!
   vin: String!
 }

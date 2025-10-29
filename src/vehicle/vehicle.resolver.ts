@@ -63,9 +63,4 @@ export class VehicleResolver {
   resolveReference(reference: { __typename: string; vin: string }) {
     return this.vehicleService.findByVin(reference.vin);
   }
-
-  @ResolveField(() => [ServiceRecord])
-  serviceRecords(@Parent() vehicle: Vehicle) {
-    return { __typename: 'ServiceRecord', vin: vehicle.vin };
-  }
 }
