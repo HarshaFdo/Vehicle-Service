@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vehicle } from '../entities/vehicle.entity';
 import { Like, Repository } from 'typeorm';
@@ -11,7 +11,10 @@ export class VehicleService {
     private vehicleRepository: Repository<Vehicle>,
   ) {}
 
-  async findAll(page: number = 1, limit: number = 100): Promise<PaginatedVehicle> {
+  async findAll(
+    page: number = 1,
+    limit: number = 100,
+  ): Promise<PaginatedVehicle> {
     const skip = (page - 1) * limit;
     const [data, total] = await this.vehicleRepository.findAndCount({
       order: { manufactured_date: 'ASC' },
@@ -63,5 +66,14 @@ export class VehicleService {
       .createQueryBuilder('vehicle')
       .where('vehicle.age_of_vehicle >= :minAge', { minAge })
       .getMany();
+  }
+
+  async findByVin(vin: string): Promise<Vehicle> {
+    const vehicle = await this.vehicleRepository.findOne({
+      where: { vin },
+    });
+    if (!vehicle)
+      throw new NotFoundException(`Vehicle with VIN ${vin} not found`);
+    return vehicle;
   }
 }

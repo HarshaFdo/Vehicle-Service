@@ -2,9 +2,15 @@ import { Module } from '@nestjs/common';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import {
+  ApolloDriver,
+  ApolloDriverConfig,
+  ApolloFederationDriverConfig,
+  ApolloFederationDriver,
+} from '@nestjs/apollo';
 import { ProcessorModule } from './processor/processor.module';
 import { BullModule } from '@nestjs/bullmq';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -25,9 +31,15 @@ import { BullModule } from '@nestjs/bullmq';
         port: 6379,
       },
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: true,
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
+      autoSchemaFile: {
+        path: join(process.cwd(), 'src/schema.gql'),
+        federation: {
+          version: 2,
+        },
+      },
+      sortSchema: true,
       playground: true,
     }),
     ProcessorModule,

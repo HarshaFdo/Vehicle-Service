@@ -1,8 +1,10 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver, ResolveReference } from '@nestjs/graphql';
 import { VehicleService } from './vehicle.service';
 import { Vehicle } from '../entities/vehicle.entity';
 import { PaginatedVehicle } from './dto/paginated-result.dto';
 import { UpdateVehicleInput } from './dto/update-vehicle.input';
+import { ServiceRecord } from 'src/stubs/service-record.stub';
+
 
 @Resolver(() => Vehicle)
 export class VehicleResolver {
@@ -55,5 +57,15 @@ export class VehicleResolver {
   @Mutation(() => Boolean)
   deleteVehicle(@Args('vin', { type: () => String }) vin: string) {
     return this.vehicleService.delete(vin).then(() => true);
+  }
+
+  @ResolveReference()
+  resolveReference(reference: { __typename: string; vin: string }) {
+    return this.vehicleService.findByVin(reference.vin);
+  }
+
+  @ResolveField(() => [ServiceRecord])
+  serviceRecords(@Parent() vehicle: Vehicle) {
+    return { __typename: 'ServiceRecord', vin: vehicle.vin };
   }
 }

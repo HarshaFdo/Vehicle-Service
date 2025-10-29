@@ -1,8 +1,11 @@
-import { Field, ID, Int, ObjectType } from "@nestjs/graphql";
+import { Directive, Field, ID, Int, ObjectType } from "@nestjs/graphql";
+import { ServiceRecord } from "src/stubs/service-record.stub";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @ObjectType()
 @Entity('vehicles')
+@Directive('@key(fields: "id")')
+@Directive('@key(fields: "vin")') // vin based
 
 export class Vehicle {
     @Field(()=>ID)
@@ -48,4 +51,7 @@ export class Vehicle {
     @Field()
     @UpdateDateColumn()
     updateed_at: Date;
+
+     @Field(() => [ServiceRecord], { nullable: true })
+  serviceRecords?: ServiceRecord[];
 }
