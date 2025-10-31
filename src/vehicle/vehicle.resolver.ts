@@ -35,6 +35,7 @@ export class VehicleResolver {
 
   @Query(() => Vehicle, { name: 'getVehicle' })
   findOne(@Args('vin', { type: () => String }) vin: string) {
+    console.log(`[VEHICLE SERVICE] Query: getVehicle called with vin="${vin}"`);
     return this.vehicleService.findOne(vin);
   }
 
@@ -61,6 +62,10 @@ export class VehicleResolver {
 
   @ResolveReference()
   resolveReference(reference: { __typename: string; vin: string }) {
-    return this.vehicleService.findByVin(reference.vin);
+    console.log('Vehicle Service: Processing request for VIN:', reference.vin);
+    const result = this.vehicleService.findByVin(reference.vin);
+    console.log('Vehicle data sent to gateway');
+
+    return result;
   }
 }
