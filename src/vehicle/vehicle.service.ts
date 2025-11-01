@@ -53,12 +53,19 @@ export class VehicleService {
   }
 
   async update(vin: string, updateData: Partial<Vehicle>): Promise<Vehicle> {
+    console.log(`\nUpdating vehicle with VIN ${vin}:`, updateData);
+
     await this.vehicleRepository.update({ vin }, updateData);
+    console.log(`Vehicle with VIN ${vin} updated successfully.`);
+
     return this.findOne(vin);
   }
 
   async delete(vin: string): Promise<void> {
+    console.log(`\nDeleting vehicle with VIN ${vin}`);
     await this.vehicleRepository.delete({ vin });
+
+    console.log(`Vehicle with VIN ${vin} deleted successfully.`);
   }
 
   async findByAge(minAge: number) {
