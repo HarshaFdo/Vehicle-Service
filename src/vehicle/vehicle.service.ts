@@ -35,6 +35,8 @@ export class VehicleService {
   }
 
   async search(model: string, page: number = 1, limit: number = 100) {
+     console.log(`Searching vehicles by model: ${model}`);
+
     const skip = (page - 1) * limit;
     const searchPattern = model.replace('*', '%');
 
@@ -44,6 +46,9 @@ export class VehicleService {
       skip,
       take: limit,
     });
+
+    console.log(`Found ${total} vehicle(s) matching model: ${model}`);
+    
     return {
       data,
       total,
