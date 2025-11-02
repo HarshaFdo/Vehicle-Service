@@ -8,4 +8,7 @@ export class ServiceRecord {
   @Directive('@external')
   id: string;
 
+  @Field()
+  vin: string;
+
 }
