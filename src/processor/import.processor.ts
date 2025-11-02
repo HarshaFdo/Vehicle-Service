@@ -1,5 +1,5 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bullmq';
 const csvParser = require('csv-parser');
@@ -11,6 +11,7 @@ const XLSX = require('xlsx');
 @Processor('import-queue')
 @Injectable()
 export class ImportProcessor extends WorkerHost {
+  private readonly logger = new Logger(ImportProcessor.name);
   constructor(
     @InjectRepository(Vehicle)
     private vehicleRepository: Repository<Vehicle>,
@@ -20,7 +21,7 @@ export class ImportProcessor extends WorkerHost {
 
   async process(job: Job): Promise<any> {
     try {
-      console.log('Processing job:', job.id, job.data);
+      this.logger.log('Processing job:', job.id, job.data);
 
       const { filePath, fileType } = job.data;
       const vehicles = [];
@@ -31,8 +32,8 @@ export class ImportProcessor extends WorkerHost {
         await this.processExcel(filePath, vehicles);
       }
 
-      console.log('Parsed vehicles:', vehicles.length);
-      console.log('Vehicle data:', vehicles);
+      this.logger.log('Parsed vehicles:', vehicles.length);
+      this.logger.log('Vehicle data:', vehicles);
 
       // Save vehicles one by one, skip duplicates
       let successCount = 0;
@@ -46,19 +47,19 @@ export class ImportProcessor extends WorkerHost {
         } catch (error: any) {
           if (error.code === '23505') {
             // if duplicated vin , should skip the record
-            console.log(`skipping duplicate vin: ${vehicle.vin}`);
+            this.logger.log(`skipping duplicate vin: ${vehicle.vin}`);
             skipCount++;
           } else {
             throw error;
           }
         }
       }
-      console.log(`Saved: ${successCount}, Skipped: ${skipCount}`);
+      this.logger.log(`Saved: ${successCount}, Skipped: ${skipCount}`);
 
       // Delete file after processsing
       unlinkSync(filePath);
 
-      console.log('File deleted');
+      this.logger.log('File deleted');
 
       return {
         success: true,
@@ -67,7 +68,7 @@ export class ImportProcessor extends WorkerHost {
         count: vehicles.length,
       };
     } catch (error) {
-      console.error('Error processing job:', error);
+      this.logger.error('Error processing job:', error);
       throw error;
     }
   }

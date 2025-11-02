@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vehicle } from '../entities/vehicle.entity';
 import { Like, Repository } from 'typeorm';
@@ -6,6 +6,8 @@ import { PaginatedVehicle } from './dto/paginated-result.dto';
 
 @Injectable()
 export class VehicleService {
+  private readonly logger = new Logger(VehicleService.name);
+
   constructor(
     @InjectRepository(Vehicle)
     private vehicleRepository: Repository<Vehicle>,
@@ -35,7 +37,7 @@ export class VehicleService {
   }
 
   async search(model: string, page: number = 1, limit: number = 100) {
-     console.log(`\nSearching vehicles by model: ${model}`);
+    this.logger.log(`Searching vehicles by model: ${model}`);
 
     const skip = (page - 1) * limit;
     const searchPattern = model.replace('*', '%');
@@ -47,7 +49,7 @@ export class VehicleService {
       take: limit,
     });
 
-    console.log(`Found ${total} vehicle(s) matching model: ${model}`);
+    this.logger.log(`Found ${total} vehicle(s) matching model: ${model}`);
     
     return {
       data,
@@ -58,19 +60,19 @@ export class VehicleService {
   }
 
   async update(vin: string, updateData: Partial<Vehicle>): Promise<Vehicle> {
-    console.log(`\nUpdating vehicle with VIN ${vin}:`, updateData);
+    this.logger.log(`Updating vehicle with VIN ${vin}: ${JSON.stringify(updateData)}`);
 
     await this.vehicleRepository.update({ vin }, updateData);
-    console.log(`Vehicle with VIN ${vin} updated successfully.`);
+    this.logger.log(`Vehicle with VIN ${vin} updated successfully.`);
 
     return this.findOne(vin);
   }
 
   async delete(vin: string): Promise<void> {
-    console.log(`\nDeleting vehicle with VIN ${vin}`);
+    this.logger.log(`Deleting vehicle with VIN ${vin}`);
     await this.vehicleRepository.delete({ vin });
 
-    console.log(`Vehicle with VIN ${vin} deleted successfully.`);
+    this.logger.log(`Vehicle with VIN ${vin} deleted successfully.`);
   }
 
   async findByAge(minAge: number) {

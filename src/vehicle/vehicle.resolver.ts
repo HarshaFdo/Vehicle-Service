@@ -3,11 +3,13 @@ import { VehicleService } from './vehicle.service';
 import { Vehicle } from '../entities/vehicle.entity';
 import { PaginatedVehicle } from './dto/paginated-result.dto';
 import { UpdateVehicleInput } from './dto/update-vehicle.input';
-import { ServiceRecord } from 'src/stubs/service-record.stub';
+import { Logger } from '@nestjs/common';
 
 
 @Resolver(() => Vehicle)
 export class VehicleResolver {
+  private readonly logger = new Logger(VehicleResolver.name);
+
   constructor(private readonly vehicleService: VehicleService) {}
 
   @Query(() => PaginatedVehicle, { name: 'getAllVehicles' })
@@ -35,7 +37,7 @@ export class VehicleResolver {
 
   @Query(() => Vehicle, { name: 'getVehicle' })
   findOne(@Args('vin', { type: () => String }) vin: string) {
-    console.log(`[VEHICLE SERVICE] Query: getVehicle called with vin="${vin}"`);
+    this.logger.log(`[VEHICLE SERVICE] Query: getVehicle called with vin="${vin}"`);
     return this.vehicleService.findOne(vin);
   }
 
@@ -62,9 +64,9 @@ export class VehicleResolver {
 
   @ResolveReference()
   resolveReference(reference: { __typename: string; vin: string }) {
-    console.log('Vehicle Service: Processing request for VIN:', reference.vin);
+    this.logger.log('Vehicle Service: Processing request for VIN:', reference.vin);
     const result = this.vehicleService.findByVin(reference.vin);
-    console.log('Vehicle data sent to gateway');
+    this.logger.log('Vehicle data sent to gateway');
 
     return result;
   }

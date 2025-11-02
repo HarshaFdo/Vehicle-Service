@@ -1,9 +1,11 @@
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable} from '@nestjs/common';
+import { Injectable, Logger} from '@nestjs/common';
 import { Queue } from 'bullmq';
 
 @Injectable()
 export class ProcessorService {
+  private readonly logger = new Logger(ProcessorService.name);
+
   constructor(
     @InjectQueue('import-queue') private importQueue: Queue,
     @InjectQueue('export-queue') private exportQueue: Queue,
@@ -15,7 +17,7 @@ export class ProcessorService {
       fileType: data.fileType,
     });
 
-    console.log('Job added to queue:', job.id);
+    this.logger.log('Job added to queue:', job.id);
   }
 
   async exportJob(data: { minAge: number; userId: string; sessionHash: string }) {
@@ -25,6 +27,6 @@ export class ProcessorService {
       sessionHash: data.sessionHash
     });
 
-    console.log('Export Job added to queue:', job.id);
+    this.logger.log('Export Job added to queue:', job.id);
   }
 }

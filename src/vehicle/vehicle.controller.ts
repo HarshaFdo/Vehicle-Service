@@ -14,7 +14,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { firstValueFrom } from 'rxjs';
 import { ExportVehicleDto } from './dto/export-vehicle.dto';
 import { ProcessorService } from 'src/processor/processor.service';
 import * as fs from 'fs';

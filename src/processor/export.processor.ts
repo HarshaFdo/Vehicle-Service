@@ -1,6 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vehicle } from '../entities/vehicle.entity';
@@ -12,6 +12,8 @@ import * as path from 'path';
 @Processor('export-queue')
 @Injectable()
 export class ExportProcessor extends WorkerHost {
+  private readonly logger = new Logger(ExportProcessor.name);
+
   constructor(
     @InjectRepository(Vehicle)
     private vehicleRepository: Repository<Vehicle>,
@@ -23,7 +25,7 @@ export class ExportProcessor extends WorkerHost {
   async process(job: Job): Promise<any> {
     const { minAge, userId, sessionHash } = job.data;
 
-    console.log('Job data received:', { minAge, userId, sessionHash });
+    this.logger.log('Job data received:', { minAge, userId, sessionHash });
 
     const vehicles = await this.vehicleRepository
       .createQueryBuilder('vehicle')
@@ -31,7 +33,7 @@ export class ExportProcessor extends WorkerHost {
       .orderBy('vehicle.manufactured_date', 'ASC')
       .getMany();
 
-    console.log('Found vehicles:', vehicles.length);
+    this.logger.log('Found vehicles:', vehicles.length);
 
     const fileName = `export-${Date.now()}.csv`;
     const filePath = path.join(
@@ -68,15 +70,15 @@ try {
       fileName,
       filePath,
     };
-    console.log('Sending to notification service:', payload); // Add this line
+    this.logger.log('Sending to notification service:', payload); // Add this line
     
     await firstValueFrom(
       this.httpService.post('http://localhost:3002/notification/send', payload),
     );
 
-    console.log('Notification sent to notification service');
+    this.logger.log('Notification sent to notification service');
   } catch (error) {
-    console.error('Error sending notification:', error);
+    this.logger.error('Error sending notification:', error);
   }
     return { success: true, count: vehicles.length, fileName };
   }
