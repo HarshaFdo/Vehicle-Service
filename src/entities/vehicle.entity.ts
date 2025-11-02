@@ -10,7 +10,7 @@ import {
 
 @ObjectType()
 @Entity('vehicles')
-@Directive('@key(fields: "id")')
+// @Directive('@key(fields: "id")')
 @Directive('@key(fields: "vin")') // vin based
 export class Vehicle {
   @Field(() => ID)
