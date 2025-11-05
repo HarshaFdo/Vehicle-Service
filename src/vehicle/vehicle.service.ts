@@ -33,7 +33,14 @@ export class VehicleService {
   }
 
   async findOne(vin: string): Promise<Vehicle> {
-    return this.vehicleRepository.findOne({ where: { vin } });
+    const vehicle = await this.vehicleRepository.findOne({ where: { vin } });
+
+    if (!vehicle) {
+      this.logger.warn(`Vehicle not found: ${vin}`);
+      throw new NotFoundException(`Vehicle with VIN ${vin} not found`);
+    }
+
+    return vehicle;
   }
 
   async search(model: string, page: number = 1, limit: number = 100) {
@@ -50,7 +57,7 @@ export class VehicleService {
     });
 
     this.logger.log(`Found ${total} vehicle(s) matching model: ${model}`);
-    
+
     return {
       data,
       total,
@@ -60,7 +67,9 @@ export class VehicleService {
   }
 
   async update(vin: string, updateData: Partial<Vehicle>): Promise<Vehicle> {
-    this.logger.log(`Updating vehicle with VIN ${vin}: ${JSON.stringify(updateData)}`);
+    this.logger.log(
+      `Updating vehicle with VIN ${vin}: ${JSON.stringify(updateData)}`,
+    );
 
     await this.vehicleRepository.update({ vin }, updateData);
     this.logger.log(`Vehicle with VIN ${vin} updated successfully.`);
@@ -86,8 +95,11 @@ export class VehicleService {
     const vehicle = await this.vehicleRepository.findOne({
       where: { vin },
     });
-    if (!vehicle)
+
+    if (!vehicle) {
+      this.logger.warn(`Vehicle not found: ${vin}`);
       throw new NotFoundException(`Vehicle with VIN ${vin} not found`);
+    }
     return vehicle;
   }
 }

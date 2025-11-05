@@ -5,6 +5,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Param,
   Post,
   Res,
@@ -21,6 +22,8 @@ import * as path from 'path';
 
 @Controller('vehicle')
 export class VehicleController {
+  private readonly logger = new Logger(VehicleController.name);
+
   constructor(private readonly processorService: ProcessorService) {}
 
   @Post('import')
@@ -38,6 +41,7 @@ export class VehicleController {
   )
   async importFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
+      this.logger.warn('Import failed: No file uploaded');
       throw new BadRequestException('No file uploaded');
     }
 
@@ -53,38 +57,62 @@ export class VehicleController {
     }
 
     // Call background process
-    await this.processorService.importJob( {
+    try {
+      await this.processorService.importJob({
         filePath: file.path,
         fileType: type,
       });
 
-    return { message: 'File uploaded successfully. Processing in background.' };
+      this.logger.log(`Import job queued: ${file.originalname}`);
+      return {
+        message: 'File uploaded successfully. Processing in background.',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to queue import job:  ${file.originalname}`,
+        error,
+      );
+      throw new BadRequestException('Failed to queue import job');
+    }
   }
 
   @Post('export')
   async exportVehicles(@Body() data: ExportVehicleDto) {
     // Call background-service API
-    await this.processorService.exportJob({
+    try {
+      await this.processorService.exportJob({
         minAge: data.minAge,
         userId: data.userId,
         sessionHash: data.sessionHash,
-      })
-
-    return {
-      message:
-        'Export job queued. You will receive notification when complete.',
-    };
+      });
+      this.logger.log(`Export job queued: userId=${data.userId}`);
+      return {
+        message:
+          'Export job queued. You will receive notification when complete.',
+      };
+    } catch (error) {
+      this.logger.error(`Failed to queue export job`, error);
+      throw new BadRequestException('Failed to queue export job');
+    }
   }
 
   @Get('download/:fileName')
   async downloadFile(@Param('fileName') fileName: string, @Res() res) {
-  const filePath = path.join(__dirname, '..', '..', '..', 'shared', 'exports', fileName);
-  
-  // Check if file exists
-  if (!fs.existsSync(filePath)) {
-    throw new BadRequestException('File not found');
-  }
+    const filePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'shared',
+      'exports',
+      fileName,
+    );
 
-   res.download(filePath, fileName);
-}
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      throw new BadRequestException('File not found');
+    }
+
+    res.download(filePath, fileName);
+  }
 }

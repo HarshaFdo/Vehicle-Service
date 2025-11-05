@@ -70,7 +70,7 @@ try {
       fileName,
       filePath,
     };
-    this.logger.log('Sending to notification service:', payload); // Add this line
+    this.logger.log('Sending to notification service:', payload); 
     
     await firstValueFrom(
       this.httpService.post('http://localhost:3002/notification/send', payload),
