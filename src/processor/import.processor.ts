@@ -61,6 +61,8 @@ export class ImportProcessor extends WorkerHost {
 
       this.logger.log('File deleted');
 
+      // this.logger.log('File processing complete')
+
       return {
         success: true,
         saved: successCount,
