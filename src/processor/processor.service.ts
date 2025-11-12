@@ -20,11 +20,10 @@ export class ProcessorService {
     this.logger.log('Job added to queue:', job.id);
   }
 
-  async exportJob(data: { minAge: number; userId: string; sessionHash: string }) {
+  async exportJob(data: { minAge: number; userId: string;}) {
     const job = await this.exportQueue.add('export-job', {
       minAge: data.minAge,
       userId: data.userId,
-      sessionHash: data.sessionHash
     });
 
     this.logger.log('Export Job added to queue:', job.id);

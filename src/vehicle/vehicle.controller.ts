@@ -83,7 +83,6 @@ export class VehicleController {
       await this.processorService.exportJob({
         minAge: data.minAge,
         userId: data.userId,
-        sessionHash: data.sessionHash,
       });
       this.logger.log(`Export job queued: userId=${data.userId}`);
       return {

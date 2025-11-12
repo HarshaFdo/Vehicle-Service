@@ -8,7 +8,4 @@ export class ExportVehicleDto {
   @IsNotEmpty()
   @IsString()
   userId: string; 
-  
-  @IsString()
-  sessionHash: string;
 }

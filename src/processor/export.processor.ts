@@ -23,9 +23,9 @@ export class ExportProcessor extends WorkerHost {
   }
 
   async process(job: Job): Promise<any> {
-    const { minAge, userId, sessionHash } = job.data;
+    const { minAge, userId } = job.data;
 
-    this.logger.log('Job data received:', { minAge, userId, sessionHash });
+    this.logger.log('Job data received:', { minAge, userId });
 
     const vehicles = await this.vehicleRepository
       .createQueryBuilder('vehicle')
@@ -65,7 +65,6 @@ export class ExportProcessor extends WorkerHost {
 try {
     const payload = {
       userId,
-      sessionHash,
       message: `Export completed: ${vehicles.length} vehicles exported`,
       fileName,
       filePath,
