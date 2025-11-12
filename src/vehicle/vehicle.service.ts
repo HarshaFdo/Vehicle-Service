@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vehicle } from '../entities/vehicle.entity';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { PaginatedVehicle } from './dto/paginated-result.dto';
 
 @Injectable()
@@ -50,7 +50,7 @@ export class VehicleService {
     const searchPattern = model.replace('*', '%');
 
     const [data, total] = await this.vehicleRepository.findAndCount({
-      where: { car_model: Like(searchPattern) },
+      where: { car_model: ILike(searchPattern) },
       order: { manufactured_date: 'ASC' },
       skip,
       take: limit,
